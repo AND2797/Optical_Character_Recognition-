@@ -1,0 +1,152 @@
+import torch
+import torchvision
+import torchvision.transforms as transforms
+import numpy as np
+import matplotlib.pyplot as plt
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
+
+
+from torch.utils.tensorboard import SummaryWriter 
+
+torch.set_printoptions(linewidth = 120)
+
+
+train_set = torchvision.datasets.FashionMNIST(
+            root = './data/FasionMNIST',
+            train = True,
+            download = True,
+            transform  = transforms.Compose([
+                transforms.ToTensor()
+            ])
+)
+
+torch.set_grad_enabled(True)
+
+train_loader = torch.utils.data.DataLoader(train_set, batch_size = 100)
+
+
+def get_correct(preds, labels):
+    return preds.argmax(dim=1).eq(labels).sum().item()
+
+def linear(in_ft, out_ft):
+    return nn.Linear(in_features = in_ft, out_features = out_ft)
+
+def Conv(in_ch, out_ch, ks):
+    return nn.Conv2d(in_channels = in_ch ,out_channels = out_ch ,kernel_size = ks)
+
+class Network(nn.Module):
+    def __init__(self):
+        super(Network, self).__init__()
+        self.conv1 = Conv(1,6,5)
+        self.conv2 = Conv(6,12,5)
+        
+        
+        self.fc1 = linear(12*4*4,120)
+        self.fc2 = linear(120,60)
+        self.out = linear(60,10)
+        
+    def forward(self, t):
+        
+        #hidden conv
+        t = self.conv1(t)
+        t = F.relu(t)
+        t = F.max_pool2d(t, kernel_size = 2, stride = 2)
+        
+        #hidden conv
+        t = self.conv2(t)
+        t = F.relu(t)
+        t = F.max_pool2d(t, kernel_size = 2, stride = 2)
+        
+        #hidden dense
+        t = t.reshape(-1,12*4*4)
+        t = self.fc1(t)
+        t = F.relu(t)
+        
+        #hidden dense
+        t = self.fc2(t)
+        t = F.relu(t)
+        
+        #output
+        t = self.out(t)
+        #t = F.softmax(t, dim = 1)
+        return t
+        
+        
+
+
+network = Network()
+optimizer = optim.Adam(network.parameters(), lr = 0.01)
+
+images, labels = next(iter(train_loader))
+grid = torchvision.utils.make_grid(images)
+
+tb = SummaryWriter()
+tb.add_image('images',grid)
+tb.add_graph(network,images)
+
+for epoch in range(10):
+
+    
+    total_loss = 0
+    total_correct = 0
+    
+    for batch in train_loader:
+       images, labels = batch
+       preds = network(images)
+       loss = F.cross_entropy(preds, labels)
+       optimizer.zero_grad()
+       loss.backward()
+       optimizer.step()
+       
+       total_loss += loss.item()
+       total_correct += get_correct(preds, labels)
+    
+    tb.add_scalar('Loss',total_loss,epoch)
+    tb.add_scalar('Number Correct', total_correct,epoch)
+    tb.add_scalar('Accuracy',total_correct/len(train_set),epoch)
+    
+    tb.add_histogram('conv1.bias',network.conv1.bias,epoch)
+    tb.add_histogram('conv1.weight',network.conv1.weight,epoch)
+    tb.add_histogram('conv1.weight.grad',network.conv1.weight.grad,epoch)
+         
+    print("epoch:",epoch,"total_correct:",total_correct, "loss:", total_loss)
+
+    print(total_correct/len(train_set))
+  
+#confusion matrix 
+tb.close()
+
+@torch.no_grad()
+def get_all(model, loader):
+    all_preds = torch.tensor([])
+    for batch in loader:
+        images, labels = batch
+        preds = model(images)
+        
+        all_preds = torch.cat((all_preds, preds), dim = 0)
+    return all_preds
+
+
+prediction_loader = torch.utils.data.DataLoader(train_set, batch_size = 5000)
+train_preds = get_all(network, train_loader)
+preds_correct = get_correct(train_preds, train_set.targets)
+
+paired_preds = torch.stack((train_set.targets,train_preds.argmax(dim=1)),dim = 1) #true label, predicted label
+
+
+cmt = torch.zeros((10,10),dtype = torch.int64)
+
+for pair in paired_preds:
+    true, predict = pair.tolist()
+    cmt[true, predict] += 1
+    
+    
+    
+
+    
+    
+    
+
