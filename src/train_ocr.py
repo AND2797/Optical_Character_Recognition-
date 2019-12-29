@@ -16,7 +16,7 @@ torch.set_printoptions(linewidth = 120)
 
 torch.set_grad_enabled(True)
 
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 train_set = torchvision.datasets.EMNIST('./data', 
                             train = True,
@@ -33,9 +33,10 @@ test_set = torchvision.datasets.EMNIST('./data',
                                 transforms.ToTensor()]))
 
 train_loader = torch.utils.data.DataLoader(train_set, batch_size = 100)
+test_loader = torch.utils.data.DataLoader(test_set, batch_size = 100)
 
 def get_correct(preds, labels):
-    return preds.argmax(dim=1).eq(labels).sum().item()
+    return preds.argmax(dim=1).eq(labels.to(device)).sum().item()
 
 def linear(in_ft, out_ft):
     return nn.Linear(in_features = in_ft, out_features = out_ft)
@@ -56,22 +57,26 @@ class Network(nn.Module):
                         Conv(6,12,5),
                         nn.ReLU()
                         )
-        
-        
+    
         self.fc = nn.Sequential(
-                        linear(12*4*4,120),
-                        linear(120,60),
-                        linear(60,n_classes)
+                        linear(12*4*4,192),
+                        linear(192,120),
+                        linear(120,n_classes)
                         )
         
     def forward(self, t):
 
         t = self.conv1(t)
-        t = F.max_pool2d(t,2,2)
+
+        t = F.max_pool2d(t,2,2) #kernel size, stride
+ 
         t = self.conv2(t)
         t = F.max_pool2d(t,2,2)
+
         t = t.reshape(-1,12*4*4)
-        t = self.fc(t) 
+
+        t = self.fc(t)
+
 
         return t
         
@@ -79,6 +84,7 @@ class Network(nn.Module):
 
 
 network = Network(1,47)
+network.cuda()
 optimizer = optim.Adam(network.parameters(), lr = 0.01)
 
 # images, labels = next(iter(train_loader))
@@ -88,7 +94,7 @@ optimizer = optim.Adam(network.parameters(), lr = 0.01)
 # tb.add_image('images',grid)
 # tb.add_graph(network,images)
 
-for epoch in range(10):
+for epoch in range(30):
 
     
     total_loss = 0
@@ -96,6 +102,8 @@ for epoch in range(10):
     
     for batch in train_loader:
        images, labels = batch
+       images = images.to(device)
+       labels = labels.to(device)
        preds = network(images)
        loss = F.cross_entropy(preds, labels)
        optimizer.zero_grad()
@@ -122,9 +130,11 @@ for epoch in range(10):
 
 @torch.no_grad()
 def get_all(model, loader):
-    all_preds = torch.tensor([])
+    all_preds = torch.tensor([]).to(device)
     for batch in loader:
         images, labels = batch
+        images = images.to(device)
+        labels = labels.to(device)
         preds = model(images)
         
         all_preds = torch.cat((all_preds, preds), dim = 0)
@@ -135,7 +145,7 @@ prediction_loader = torch.utils.data.DataLoader(train_set, batch_size = 5000)
 train_preds = get_all(network, train_loader)
 preds_correct = get_correct(train_preds, train_set.targets)
 
-paired_preds = torch.stack((train_set.targets,train_preds.argmax(dim=1)),dim = 1) #true label, predicted label
+paired_preds = torch.stack((train_set.targets.to(device),train_preds.argmax(dim=1)),dim = 1) #true label, predicted label
 
 
 cmt = torch.zeros((47,47),dtype = torch.int64)
@@ -145,8 +155,22 @@ for pair in paired_preds:
     cmt[true, predict] += 1
     
     
-    
 
+## TEST
+    
+prediction_loader = torch.utils.data.DataLoader(test_set, batch_size = 1000)
+test_preds = get_all(network, test_loader)
+preds_correct = get_correct(test_preds, test_set.targets)
+
+paired_preds = torch.stack((test_set.targets.to(device),test_preds.argmax(dim=1)),dim = 1) #true label, predicted label
+
+
+cmt = torch.zeros((47,47),dtype = torch.int64)
+
+for pair in paired_preds:
+    true, predict = pair.tolist()
+    cmt[true, predict] += 1
+    
     
     
     
