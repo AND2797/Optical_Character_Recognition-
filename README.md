@@ -5,7 +5,7 @@ Extract text from images and classify accordingly.
 - [X] Train in PyTorch (EMNIST - Balanced)
 - [ ] Refactor training loop
 - [ ] Hyperparameter Study 
-- [ ] Extract text from images
+- [X] Extract text from images
 - [ ] Pre-process to match EMNIST 
 - [ ] Test on extracted
 - [ ] Try realtime OCR from video
