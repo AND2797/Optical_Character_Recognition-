@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from extract2 import *
 
 
 
@@ -140,6 +141,17 @@ def get_all(model, loader):
         all_preds = torch.cat((all_preds, preds), dim = 0)
     return all_preds
 
+@torch.no_grad()
+def get_all_OCR(model, image_batch):
+    all_preds = torch.tensor([]).to(device)
+
+        # images, labels = batch
+    images = image_batch.to(device)
+        # labels = labels.to(device)
+    preds = model(images)
+        
+    all_preds = torch.cat((all_preds, preds), dim = 0)
+    return all_preds
 
 prediction_loader = torch.utils.data.DataLoader(train_set, batch_size = 5000)
 train_preds = get_all(network, train_loader)
@@ -171,7 +183,24 @@ for pair in paired_preds:
     true, predict = pair.tolist()
     cmt[true, predict] += 1
     
-    
-    
-    
 
+
+###
+###########
+    
+    
+if __name__ == "__main__":
+    image = skimage.img_as_float(skimage.io.imread('04_deep.jpg'))
+    bboxes, bw = findLetters(image)
+    images_cropped = cropImage(bboxes, image)
+    
+## ON OCR
+
+OCR_loader = torch.FloatTensor(images_cropped)
+OCR_preds = get_all_OCR(network, OCR_loader)
+
+letters_EMNIST = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
+         10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 16: 'G', 17: 'H', 18: 'I', 19: 'J',
+         20: 'K', 21: 'L', 22: 'M', 23: 'N', 24: 'O', 25: 'P', 26: 'Q', 27: 'R', 28: 'S', 29: 'T',
+         30: 'U', 31: 'V', 32: 'W', 33: 'X', 34: 'Y', 35: 'Z', 36: 'a', 37: 'b', 38: 'd', 39: 'e',
+         40: 'f', 41: 'g', 42: 'h', 43: 'n', 44: 'q', 45: 'r', 46: 't'}

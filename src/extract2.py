@@ -71,28 +71,31 @@ def findLetters(image):
     
     return bboxes, bw 
 
-image = skimage.img_as_float(skimage.io.imread('04_deep.jpg'))
+#image = skimage.img_as_float(skimage.io.imread('04_deep.jpg'))
 
 
-bboxes, bw = findLetters(image)
+#bboxes, bw = findLetters(image)
 
 def getRows(image):
     pass
 
-def cropImage(bboxes):
+def cropImage(bboxes, image):
     
-    images = []
+    images_cropped = []
     # bboxes, _ = findLetters(images)
     for bbox in bboxes:
         y1, x1, y2, x2 = bbox
         test = image[y1:y2, x1:x2,0]
-        test_resized = resize(test.T, (24,24), anti_aliasing = True)
-        test_final = pad(test_resized,(2,2),'constant',constant_values = (1,1))
-        test_final = np.where(test_final < 0.65, 0.4, 1)
-        images.append(test_final)
+        test_resized = resize(test.T, (28,28), anti_aliasing = True)
+        #test_final = pad(test_resized,(2,2),'constant',constant_values = (1,1))
+        test_final = test_resized
+        test_final = np.expand_dims(test_final,0)
+        images_cropped.append(test_final)
         # images.append(test_resized)
         
-    return images
+    return images_cropped
 
+def toPyTensor(images):
+    pass
 
-images = cropImage(bboxes)
+# images = cropImage(bboxes)
