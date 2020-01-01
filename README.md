@@ -6,6 +6,7 @@ Extract text from images and classify accordingly.
 - [ ] Refactor training loop
 - [ ] Hyperparameter Study 
 - [X] Extract text from images
-- [ ] Pre-process to match EMNIST 
-- [ ] Test on extracted
+- [X] Pre-process to match EMNIST 
+- [X] Test on extracted
+- [ ] Improve accuracy and pre-processing
 - [ ] Try realtime OCR from video
