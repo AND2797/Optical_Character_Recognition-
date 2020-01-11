@@ -97,9 +97,9 @@ def get_all(model, loader):
 def get_all_OCR(model, image_batch):
     all_preds = torch.tensor([]).to(device)
 
-        # images, labels = batch
+
     images = image_batch.to(device)
-        # labels = labels.to(device)
+
     preds = model(images)
         
     all_preds = torch.cat((all_preds, preds), dim = 0)
@@ -109,12 +109,7 @@ network = Network(1,47)
 network.cuda()
 optimizer = optim.Adam(network.parameters(), lr = 0.001)
 
-# images, labels = next(iter(train_loader))
-# grid = torchvision.utils.make_grid(images)
 
-# tb = SummaryWriter()
-# tb.add_image('images',grid)
-# tb.add_graph(network,images)
 
 for epoch in range(200):
 
@@ -135,20 +130,11 @@ for epoch in range(200):
        total_loss += loss.item()
        total_correct += get_correct(preds, labels)
     
-    # tb.add_scalar('Loss',total_loss,epoch)
-    # tb.add_scalar('Number Correct', total_correct,epoch)
-    # tb.add_scalar('Accuracy',total_correct/len(train_set),epoch)
-    
-    # tb.add_histogram('conv1.bias',network.conv1.bias,epoch)
-    # tb.add_histogram('conv1.weight',network.conv1.weight,epoch)
-    # tb.add_histogram('conv1.weight.grad',network.conv1.weight.grad,epoch)
-         
+
     print("epoch:",epoch,"total_correct:",total_correct, "loss:", total_loss)
 
     print(total_correct/len(train_set))
   
-#confusion matrix 
-# tb.close()
 
 
 prediction_loader = torch.utils.data.DataLoader(train_set, batch_size = 5000)
@@ -191,7 +177,7 @@ for pair in paired_preds:
     
 acc_test = accuracy(preds_correct, test_set)
 
-
+def Predict()
 ###
 ###########
     
@@ -226,7 +212,7 @@ for t, b in zip(translated, bboxes):
     paired.append([t,b])
 
 fig, ax = plt.subplots(figsize=(10,6))
-    # ax.imshow(image)
+
 for bbox in bboxes:
     y1, x1, y2, x2 = bbox
     rect = mpatches.Rectangle((x1, y1), x2 - x1, y2 - y1,
