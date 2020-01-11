@@ -62,8 +62,12 @@ def findLetters(image):
             bboxes.append(np.array([y1, x1, y2, x2]))
             ax.add_patch(rect)            
         
+<<<<<<< HEAD
    
         
+=======
+
+>>>>>>> origin
 
     bw = gray
     
@@ -71,10 +75,13 @@ def findLetters(image):
     
     return bboxes, bw
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> origin
 def preprocesss(image):
     pass
 
@@ -85,14 +92,17 @@ def squareIT(M, val):
     (a, b) = M.shape
     if a != b:
         padding = ((abs(a-b)//2, abs(a-b)//2), (abs(a-b)//2, abs(a-b)//2))
+<<<<<<< HEAD
 
         
+=======
+>>>>>>> origin
     return np.pad(M, padding, mode = 'constant',constant_values = val)
 
 def cropImage(bboxes, image):
     
     images_cropped = []
-    # bboxes, _ = findLetters(images)
+
     gray = skimage.color.rgb2gray(image)
     blur = skimage.filters.gaussian(gray, sigma=2.3)
     thresh = skimage.filters.threshold_otsu(blur)
@@ -114,10 +124,17 @@ def cropImage(bboxes, image):
 
         test_final = np.expand_dims(test_final,0)
         images_cropped.append(test_final)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> origin
         
     return images_cropped
 
 def toPyTensor(images):
     pass
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin
