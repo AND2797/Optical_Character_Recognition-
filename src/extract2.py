@@ -35,10 +35,7 @@ def findLetters(image):
     borders = skimage.segmentation.clear_border(img_thresh)
     label_image = skimage.measure.label(borders)
 
-
-    image_label_overlay = skimage.color.label2rgb(label_image, image=gray)
-
- 
+    image_label_overlay = skimage.color.label2rgb(borders*1, image=gray) 
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.imshow(image_label_overlay)
 
@@ -55,40 +52,95 @@ def findLetters(image):
             rect = mpatches.Rectangle((minc, minr), maxc - minc, maxr - minr,
                                   fill=False, edgecolor='black', linewidth=1)
           
-            y2 = minr + (maxr - minr)
-            x1 = minc
-            
-            y1 = minr
             x2 = maxc
+            y2 = minr + (maxr - minr)
+            
+            x1 = minc
+            y1 = minr
+     
             
             bboxes.append(np.array([y1, x1, y2, x2]))
             ax.add_patch(rect)            
+        
+    # image_label_overlay = skimage.color.label2rgb(label_image, image=gray) 
+    # fig, ax = plt.subplots(figsize=(10, 6))
+    # ax.imshow(image_label_overlay)
+
+    # total_area = 0
+    # for region in skimage.measure.regionprops(label_image):
+    #     total_area += region.area
+    # mean_area = total_area / len(skimage.measure.regionprops(label_image))
+    
+    # for region in skimage.measure.regionprops(label_image):
+        
+    #     if region.area >= mean_area*0.55:
+    #         minr, minc, maxr, maxc = region.bbox
+    #         print(region.bbox)
+    #         rect = mpatches.Rectangle((minc, minr), maxc - minc, maxr - minr,
+    #                               fill=False, edgecolor='black', linewidth=1)
+          
+    #         x2 = maxc
+    #         y2 = minr + (maxr - minr)
+            
+    #         x1 = minc
+    #         y1 = minr
+     
+            
+    #         bboxes.append(np.array([y1, x1, y2, x2]))
+    #         ax.add_patch(rect)            
         
 
     bw = gray
     
 
     
-    return bboxes, bw 
+    return bboxes, bw
 
 #image = skimage.img_as_float(skimage.io.imread('04_deep.jpg'))
 
 
 #bboxes, bw = findLetters(image)
+def preprocesss(image):
+    pass
 
 def getRows(image):
     pass
+
+def squareIT(M, val):
+    (a, b) = M.shape
+    if a != b:
+        padding = ((abs(a-b)//2, abs(a-b)//2), (abs(a-b)//2, abs(a-b)//2))
+    # else:
+    #     padding = ((0, b-a), (0,0 ))
+        
+    return np.pad(M, padding, mode = 'constant',constant_values = val)
 
 def cropImage(bboxes, image):
     
     images_cropped = []
     # bboxes, _ = findLetters(images)
+    gray = skimage.color.rgb2gray(image)
+    blur = skimage.filters.gaussian(gray, sigma=2.3)
+    thresh = skimage.filters.threshold_otsu(blur)
+    img_thresh = skimage.morphology.closing(blur < thresh, skimage.morphology.square(1))
+    borders = skimage.segmentation.clear_border(img_thresh)
+    borders = borders*1
+    # label_image = skimage.measure.label(borders)
+    # bboxes = sorted(bboxes, key = lambda x:-x[1])
+    #TO DO : SORT BBOXES, ADD IN ROWS.
     for bbox in bboxes:
         y1, x1, y2, x2 = bbox
-        test = image[y1:y2, x1:x2,0]
-        test_resized = resize(test.T, (28,28), anti_aliasing = True)
-        #test_final = pad(test_resized,(2,2),'constant',constant_values = (1,1))
-        test_final = test_resized
+        
+        # test = borders[y1:y2, x1:x2]
+        test_final = borders[y1-10:y2+10, x1-10:x2+10] #remove later
+        padded_im = squareIT(test_final, 0 )
+        # test_final = np.pad(test_final, (test_final.shape[0]//4,test_final.shape[1]//4),'minimum')
+        test_final = padded_im.T
+            
+        # test_final[test_final <= np.min(test_final)] = 0    
+        test_final = resize(test_final, (28,28), anti_aliasing = False)
+        # test_final = np.pad(test_final, (2,2), 'minimum')
+        # test_final = 1 - test_final
         test_final = np.expand_dims(test_final,0)
         images_cropped.append(test_final)
         # images.append(test_resized)
