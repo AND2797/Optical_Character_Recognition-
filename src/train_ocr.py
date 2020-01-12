@@ -147,7 +147,8 @@ class OCR:
     @staticmethod 
     def plot_image(bboxes, translated):
         paired = []
-        for t, b in zip(np.squeeze(translated), bboxes):
+        translated = np.squeeze(translated)
+        for t, b in zip(translated, bboxes):
             paired.append([t,b])
         
         fig, ax = plt.subplots(figsize=(10,6))
@@ -177,6 +178,6 @@ if __name__ == "__main__":
     
     OCmodel = OCR('02_letters.jpg',letters_EMNIST)
     bboxes, translated = OCmodel.get_image_predictions()
-    plot_image(bboxes, translated)
+    OCmodel.plot_image(bboxes, translated)
     
     
