@@ -1,6 +1,9 @@
 ## Optical Character Recognition
 Extract text from images and classify accordingly. 
 
+
+# Output 
+![Output](https://raw.githubusercontent.com/AND2797/Optical_Character_Recognition-/master/Output.png)
 # Tasks
 - [X] Train in PyTorch (EMNIST - Balanced)
 - [ ] Refactor training loop
