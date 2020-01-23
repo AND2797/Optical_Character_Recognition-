@@ -1,6 +1,10 @@
 ## Optical Character Recognition
 Extract text from images and classify accordingly. 
 
+### Assumptions
+* Letters are reasonably spaced. 
+* Letters should reasonably resemble the training data set. 
+* Image should be naturally decipherable i.e free from any occlusions and obfuscations.
 
 ### Output 
 ![Output](https://raw.githubusercontent.com/AND2797/Optical_Character_Recognition-/master/Output.png)
