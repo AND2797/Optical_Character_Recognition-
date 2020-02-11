@@ -28,4 +28,4 @@ Extract text from images and classify accordingly.
 - [X] Test on extracted
 - [X] Improve accuracy and pre-processing
 - [ ] Try realtime OCR from video [On - Hold]
-- [ ] Training with position augmented inputs (Rotated, transversed, etc.) [0n - Hold]
+- [ ] Improve to make rotationa and scale invariant. [On - Hold]
